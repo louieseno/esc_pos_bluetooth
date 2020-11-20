@@ -114,7 +114,7 @@ class PrinterBluetoothManager {
     }
 
     // We have to rescan before connecting, otherwise we can connect only once
-    await _bluetoothManager.startScan(timeout: Duration(seconds: _timeOut + 2));
+    await _bluetoothManager.startScan(timeout: Duration(seconds: _timeOut));
     await _bluetoothManager.stopScan();
 
     // Connect
@@ -188,9 +188,10 @@ class PrinterBluetoothManager {
     _isPrinting = false;
     _bufferedBytes = [];
     print(_timeOut);
-    _runDelayed(_timeOut).then((dynamic v) async {
-      print('DISCONNECTED MANAGER');
-      await _bluetoothManager.disconnect();
-    });
+    await _bluetoothManager.disconnect();
+    // _runDelayed(_timeOut).then((dynamic v) async {
+    //   print('DISCONNECTED MANAGER');
+    //
+    // });
   }
 }
