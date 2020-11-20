@@ -79,19 +79,15 @@ class PrinterBluetoothManager {
       switch (state) {
         case BluetoothManager.CONNECTED:
           _isConnected = true;
+          print('CONNECTED');
           if (_bufferedBytes.isNotEmpty) {
             print('IS NOT EMPTY');
             print('IS NOT EMPTY');
             await _writePending();
-          } else {
-            print('IS EMPTY');
-            print('IS EMPTY');
-            _runDelayed(1).then((dynamic v) async {
-              await _bluetoothManager.disconnect();
-            });
           }
           break;
         case BluetoothManager.DISCONNECTED:
+          print('DISCONNECTED');
           _isConnected = false;
           break;
         default:
@@ -129,7 +125,7 @@ class PrinterBluetoothManager {
         completer.complete(PosPrintResult.timeout);
       }
       completer.complete(PosPrintResult.success);
-      await _bluetoothManager.disconnect();
+      // await _bluetoothManager.disconnect();
     });
 
     return completer.future;
