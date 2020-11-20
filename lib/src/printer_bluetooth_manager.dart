@@ -125,7 +125,7 @@ class PrinterBluetoothManager {
         completer.complete(PosPrintResult.timeout);
       }
       completer.complete(PosPrintResult.success);
-      // await _bluetoothManager.disconnect();
+      //await _bluetoothManager.disconnect();
     });
 
     return completer.future;
@@ -185,5 +185,9 @@ class PrinterBluetoothManager {
     }
     _isPrinting = false;
     _bufferedBytes = [];
+    _runDelayed(1).then((dynamic v) async {
+      print('DISCONNECT MANAGER');
+      await _bluetoothManager.disconnect();
+    });
   }
 }
