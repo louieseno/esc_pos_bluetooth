@@ -104,6 +104,7 @@ class PrinterBluetoothManager {
     int timeout = 5,
   }) async {
     final Completer<PosPrintResult> completer = Completer();
+    await Future<dynamic>.delayed(Duration(milliseconds: 500));
 
     if (_selectedPrinter == null) {
       return Future<PosPrintResult>.value(PosPrintResult.printerNotSelected);
@@ -188,10 +189,9 @@ class PrinterBluetoothManager {
     _isPrinting = false;
     _bufferedBytes = [];
     print(_timeOut);
-    await _bluetoothManager.disconnect();
-    // _runDelayed(_timeOut).then((dynamic v) async {
-    //   print('DISCONNECTED MANAGER');
-    //
-    // });
+    _runDelayed(_timeOut).then((dynamic v) async {
+      print('DISCONNECTED MANAGER');
+      await _bluetoothManager.disconnect();
+    });
   }
 }
