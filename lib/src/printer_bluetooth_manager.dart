@@ -189,7 +189,7 @@ class PrinterBluetoothManager {
     _isPrinting = false;
     _bufferedBytes = [];
     print(_timeOut);
-    _runDelayed(_timeOut).then((dynamic v) async {
+    _runDelayed(10).then((dynamic v) async {
       print('DISCONNECTED MANAGER');
       await _bluetoothManager.disconnect();
     });
