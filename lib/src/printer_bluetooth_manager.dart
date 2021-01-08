@@ -163,7 +163,7 @@ class PrinterBluetoothManager {
     if (bytes == null || bytes.isEmpty) {
       return Future<PosPrintResult>.value(PosPrintResult.ticketEmpty);
     }
-    _bufferedBytes = [];
+    //_bufferedBytes = [];
     _bufferedBytes = bytes;
     _queueSleepTimeMs = queueSleepTimeMs;
     _chunkSizeBytes = chunkSizeBytes;
