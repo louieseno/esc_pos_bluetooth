@@ -120,13 +120,13 @@ class PrinterBluetoothManager {
     await _bluetoothManager.connect(_selectedPrinter._device);
 
     // Printing timeout
-    _runDelayed(timeout + 2).then((dynamic v) async {
+    _runDelayed(timeout).then((dynamic v) async {
       if (_isPrinting) {
         _isPrinting = false;
         completer.complete(PosPrintResult.timeout);
       }
       completer.complete(PosPrintResult.success);
-      await _bluetoothManager.disconnect();
+      //await _bluetoothManager.disconnect();
     });
 
     return completer.future;
@@ -161,7 +161,7 @@ class PrinterBluetoothManager {
     if (bytes == null || bytes.isEmpty) {
       return Future<PosPrintResult>.value(PosPrintResult.ticketEmpty);
     }
-    _bufferedBytes = [];
+    print('BYTES $bytes');
     _bufferedBytes = bytes;
     _queueSleepTimeMs = queueSleepTimeMs;
     _chunkSizeBytes = chunkSizeBytes;
