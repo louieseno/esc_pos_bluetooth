@@ -80,16 +80,15 @@ class PrinterBluetoothManager {
     _bluetoothManager.state.listen((state) async {
       switch (state) {
         case BluetoothManager.CONNECTED:
-          print('CONNECTED');
+          print('CONNECTED STATE');
           _isConnected = true;
           if (_bufferedBytes.isNotEmpty) {
-            print('NOT EMPTY');
-            print('NOT EMPTY');
+            print('WRITE PENDING');
             await _writePending();
           }
           break;
         case BluetoothManager.DISCONNECTED:
-          print('DISCONNECTED');
+          print('DISCONNECTED STATE');
           _isConnected = false;
           break;
         default:
@@ -105,7 +104,6 @@ class PrinterBluetoothManager {
   }) async {
     final Completer<PosPrintResult> completer = Completer();
     await Future<dynamic>.delayed(Duration(milliseconds: 500));
-
     if (_selectedPrinter == null) {
       return Future<PosPrintResult>.value(PosPrintResult.printerNotSelected);
     } else if (_isScanning.value) {
@@ -163,7 +161,7 @@ class PrinterBluetoothManager {
     if (bytes == null || bytes.isEmpty) {
       return Future<PosPrintResult>.value(PosPrintResult.ticketEmpty);
     }
-    //_bufferedBytes = [];
+    _bufferedBytes = [];
     _bufferedBytes = bytes;
     _queueSleepTimeMs = queueSleepTimeMs;
     _chunkSizeBytes = chunkSizeBytes;
@@ -188,9 +186,7 @@ class PrinterBluetoothManager {
     }
     _isPrinting = false;
     _bufferedBytes = [];
-    print(_timeOut);
-    _runDelayed(10).then((dynamic v) async {
-      print('DISCONNECTED MANAGER');
+    _runDelayed(_timeOut).then((dynamic v) async {
       await _bluetoothManager.disconnect();
     });
   }
