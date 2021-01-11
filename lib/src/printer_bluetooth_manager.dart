@@ -120,7 +120,7 @@ class PrinterBluetoothManager {
     await _bluetoothManager.connect(_selectedPrinter._device);
 
     // Printing timeout
-    _runDelayed(timeout).then((dynamic v) async {
+    _runDelayed(timeout + 2).then((dynamic v) async {
       if (_isPrinting) {
         _isPrinting = false;
         completer.complete(PosPrintResult.timeout);
