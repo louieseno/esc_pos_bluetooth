@@ -34,7 +34,6 @@ class PrinterBluetoothManager {
   StreamSubscription _scanResultsSubscription;
   StreamSubscription _isScanningSubscription;
   PrinterBluetooth _selectedPrinter;
-  List _queuePrints = [];
 
   final BehaviorSubject<bool> _isScanning = BehaviorSubject.seeded(false);
   Stream<bool> get isScanningStream => _isScanning.stream;
@@ -174,7 +173,6 @@ class PrinterBluetoothManager {
     _queueSleepTimeMs = queueSleepTimeMs;
     _chunkSizeBytes = chunkSizeBytes;
     _timeOut = timeout;
-    _queuePrints.add({'bytes': bytes, 'timeout': timeout});
     return writeBytes(
       bytes,
       timeout: timeout,
