@@ -34,6 +34,7 @@ class PrinterBluetoothManager {
   StreamSubscription _scanResultsSubscription;
   StreamSubscription _isScanningSubscription;
   PrinterBluetooth _selectedPrinter;
+  List _queuePrints = [];
 
   final BehaviorSubject<bool> _isScanning = BehaviorSubject.seeded(false);
   Stream<bool> get isScanningStream => _isScanning.stream;
@@ -42,7 +43,7 @@ class PrinterBluetoothManager {
       BehaviorSubject.seeded([]);
   Stream<List<PrinterBluetooth>> get scanResults => _scanResults.stream;
 
-  List<int> _bufferedBytes = [];
+  // List<int> _bufferedBytes = [];
   int _queueSleepTimeMs = 20;
   int _chunkSizeBytes = 20;
   int _timeOut = 5;
@@ -81,12 +82,16 @@ class PrinterBluetoothManager {
       switch (state) {
         case BluetoothManager.CONNECTED:
           _isConnected = true;
-          if (_bufferedBytes.isNotEmpty) {
-            await _writePending();
+          // if (_bufferedBytes.isNotEmpty) {
+          //   await _writePending();
+          // }
+          if (_queuePrints.isNotEmpty) {
+            await _writePending(_queuePrints[0]['bytes']);
           }
           break;
         case BluetoothManager.DISCONNECTED:
           _isConnected = false;
+          _queuePrints.removeAt(0);
           break;
         default:
           break;
@@ -140,7 +145,7 @@ class PrinterBluetoothManager {
       return Future<PosPrintResult>.value(PosPrintResult.ticketEmpty);
     }
 
-    _bufferedBytes = ticket.bytes;
+    //_bufferedBytes = ticket.bytes;
     _queueSleepTimeMs = queueSleepTimeMs;
     _chunkSizeBytes = chunkSizeBytes;
     _timeOut = timeout;
@@ -159,23 +164,39 @@ class PrinterBluetoothManager {
     if (bytes == null || bytes.isEmpty) {
       return Future<PosPrintResult>.value(PosPrintResult.ticketEmpty);
     }
-    _bufferedBytes = [];
-    _bufferedBytes = bytes;
+    // _bufferedBytes = [];
+    // _bufferedBytes = bytes;
     _queueSleepTimeMs = queueSleepTimeMs;
     _chunkSizeBytes = chunkSizeBytes;
     _timeOut = timeout;
+    _queuePrints.add({'bytes': bytes, 'timeout': timeout});
     return writeBytes(
       bytes,
       timeout: timeout,
     );
   }
 
-  Future<void> _writePending() async {
-    final len = _bufferedBytes.length;
+  Future<void> _writePending(bufferedBytes) async {
+    // final len = _bufferedBytes.length;
+    // List<List<int>> chunks = [];
+    // for (var i = 0; i < len; i += _chunkSizeBytes) {
+    //   var end = (i + _chunkSizeBytes < len) ? i + _chunkSizeBytes : len;
+    //   chunks.add(_bufferedBytes.sublist(i, end));
+    // }
+    // _isPrinting = true;
+    // for (var i = 0; i < chunks.length; i += 1) {
+    //   await _bluetoothManager.writeData(chunks[i]);
+    //   sleep(Duration(milliseconds: _queueSleepTimeMs));
+    // }
+    // _isPrinting = false;
+    // _bufferedBytes = [];
+    // await _bluetoothManager.disconnect();
+
+    final len = bufferedBytes.length;
     List<List<int>> chunks = [];
     for (var i = 0; i < len; i += _chunkSizeBytes) {
       var end = (i + _chunkSizeBytes < len) ? i + _chunkSizeBytes : len;
-      chunks.add(_bufferedBytes.sublist(i, end));
+      chunks.add(bufferedBytes.sublist(i, end));
     }
     _isPrinting = true;
     for (var i = 0; i < chunks.length; i += 1) {
@@ -183,10 +204,7 @@ class PrinterBluetoothManager {
       sleep(Duration(milliseconds: _queueSleepTimeMs));
     }
     _isPrinting = false;
-    _bufferedBytes = [];
+    // _bufferedBytes = [];
     await _bluetoothManager.disconnect();
-    // _runDelayed(_timeOut).then((dynamic v) async {
-    //   await _bluetoothManager.disconnect();
-    // });
   }
 }
