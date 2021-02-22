@@ -112,6 +112,11 @@ class PrinterBluetoothManager {
       return Future<PosPrintResult>.value(PosPrintResult.scanInProgress);
     } else if (_isPrinting) {
       return Future<PosPrintResult>.value(PosPrintResult.printInProgress);
+    } else if (!_isPrinting && _isConnected) {
+      _runDelayed(1).then((dynamic v) async {
+        await _bluetoothManager.disconnect();
+        print('WRITE DISCONNECTED');
+      });
     }
 
     // We have to rescan before connecting, otherwise we can connect only once
@@ -190,8 +195,11 @@ class PrinterBluetoothManager {
     }
     _isPrinting = false;
     _bufferedBytes = [];
-    _runDelayed(1).then((dynamic v) async {
-      await _bluetoothManager.disconnect();
-    });
+    if (_isConnected) {
+      _runDelayed(1).then((dynamic v) async {
+        await _bluetoothManager.disconnect();
+        print('PENDING DISCONNECTED');
+      });
+    }
   }
 }
