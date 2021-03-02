@@ -99,7 +99,7 @@ class PrinterBluetoothManager {
     });
   }
 
-  Future<PosPrintResult> writeBytes(
+  connectBluetooth(
     List<int> bytes, {
     int timeout = 5,
   }) async {
@@ -130,7 +130,8 @@ class PrinterBluetoothManager {
     //   completer.complete(PosPrintResult.success);
     // });
 
-    return completer.future;
+    //return completer.future;
+    return;
   }
 
   Future<PosPrintResult> _writeRequest(timeout) async {
@@ -164,7 +165,7 @@ class PrinterBluetoothManager {
     _queueSleepTimeMs = queueSleepTimeMs;
     _chunkSizeBytes = chunkSizeBytes;
     _timeOut = timeout;
-    return writeBytes(
+    return connectBluetooth(
       ticket.bytes,
       timeout: timeout,
     );
@@ -185,12 +186,12 @@ class PrinterBluetoothManager {
     _chunkSizeBytes = chunkSizeBytes;
     _timeOut = timeout;
     if (!_isConnected) {
-      writeBytes(
+      await connectBluetooth(
         bytes,
         timeout: timeout,
       );
     }
-    return _writeRequest(timeout);
+    return await _writeRequest(timeout);
   }
 
   disconnect() {
