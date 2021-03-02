@@ -173,6 +173,13 @@ class PrinterBluetoothManager {
     );
   }
 
+  disconnect() {
+    _runDelayed(3).then((dynamic v) async {
+      await _bluetoothManager.disconnect();
+      print('PENDING DISCONNECTED');
+    });
+  }
+
   Future<void> _writePending() async {
     final len = _bufferedBytes.length;
     List<List<int>> chunks = [];
@@ -187,11 +194,11 @@ class PrinterBluetoothManager {
     }
     _isPrinting = false;
     _bufferedBytes = [];
-    if (_isConnected) {
-      _runDelayed(3).then((dynamic v) async {
-        await _bluetoothManager.disconnect();
-        print('PENDING DISCONNECTED');
-      });
-    }
+    // if (_isConnected) {
+    //   _runDelayed(3).then((dynamic v) async {
+    //     await _bluetoothManager.disconnect();
+    //     print('PENDING DISCONNECTED');
+    //   });
+    // }
   }
 }
