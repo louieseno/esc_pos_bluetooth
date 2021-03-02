@@ -81,9 +81,9 @@ class PrinterBluetoothManager {
       switch (state) {
         case BluetoothManager.CONNECTED:
           _isConnected = true;
-          if (_bufferedBytes.isNotEmpty) {
-            await _writePending();
-          }
+          // if (_bufferedBytes.isNotEmpty) {
+          //   await _writePending();
+          // }
           print('CONNECTED STATE');
           print('CONNECTED STATE');
           break;
@@ -120,16 +120,33 @@ class PrinterBluetoothManager {
     await _bluetoothManager.connect(_selectedPrinter._device);
 
     // Printing timeout
-    _runDelayed(timeout).then((dynamic v) async {
-      if (_isPrinting) {
-        _isPrinting = false;
-        completer.complete(PosPrintResult.timeout);
-        await _bluetoothManager.disconnect();
-        print('TIMEOUT');
-      }
-      completer.complete(PosPrintResult.success);
-    });
+    // _runDelayed(timeout).then((dynamic v) async {
+    //   if (_isPrinting) {
+    //     _isPrinting = false;
+    //     completer.complete(PosPrintResult.timeout);
+    //     await _bluetoothManager.disconnect();
+    //     print('TIMEOUT');
+    //   }
+    //   completer.complete(PosPrintResult.success);
+    // });
 
+    return completer.future;
+  }
+
+  Future<PosPrintResult> _writeRequest(timeout) async {
+    final Completer<PosPrintResult> completer = Completer();
+    if (_bufferedBytes.isNotEmpty) {
+      await _writePending();
+      _runDelayed(timeout).then((dynamic v) async {
+        if (_isPrinting) {
+          _isPrinting = false;
+          completer.complete(PosPrintResult.timeout);
+          await _bluetoothManager.disconnect();
+          print('TIMEOUT');
+        }
+        completer.complete(PosPrintResult.success);
+      });
+    }
     return completer.future;
   }
 
@@ -167,10 +184,13 @@ class PrinterBluetoothManager {
     _queueSleepTimeMs = queueSleepTimeMs;
     _chunkSizeBytes = chunkSizeBytes;
     _timeOut = timeout;
-    return writeBytes(
-      bytes,
-      timeout: timeout,
-    );
+    if (!_isConnected) {
+      writeBytes(
+        bytes,
+        timeout: timeout,
+      );
+    }
+    return _writeRequest(timeout);
   }
 
   disconnect() {
