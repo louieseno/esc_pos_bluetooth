@@ -193,7 +193,7 @@ class PrinterBluetoothManager {
   }
 
   disconnect() {
-    _runDelayed(2).then((dynamic v) async {
+    _runDelayed(3).then((dynamic v) async {
       await _bluetoothManager.disconnect();
       print('PENDING DISCONNECTED');
     });
