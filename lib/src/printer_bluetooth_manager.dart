@@ -96,7 +96,7 @@ class PrinterBluetoothManager {
     });
   }
 
-  Future<PosPrintResult> _connectBluetooth(
+  _connectBluetooth(
     List<int> bytes, {
     int timeout = 5,
   }) async {
@@ -125,17 +125,18 @@ class PrinterBluetoothManager {
           timer.cancel();
           print('ENDTIME');
           print(_isConnected);
+          if (_isConnected) {
+            _stateTimer?.cancel();
+            return Future<PosPrintResult>.value(PosPrintResult.success);
+          } else {
+            _stateTimer?.cancel();
+            return Future<PosPrintResult>.value(PosPrintResult.timeout);
+          }
         } else {
           _start--;
         }
-        print(timer);
       },
     );
-    if (_isConnected) {
-      return Future<PosPrintResult>.value(PosPrintResult.success);
-    } else {
-      return Future<PosPrintResult>.value(PosPrintResult.timeout);
-    }
   }
 
   Future<PosPrintResult> _writeRequest(timeout) async {
