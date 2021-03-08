@@ -116,8 +116,8 @@ class PrinterBluetoothManager {
     await _bluetoothManager.stopScan();
 
     // Connect
-    final connected = await _bluetoothManager.connect(_selectedPrinter._device);
-    print("$connected CONNECTION DONE");
+    await _bluetoothManager.connect(_selectedPrinter._device);
+    // delay connection ios
     await Future<dynamic>.delayed(Duration(milliseconds: 1500));
     return Future<PosPrintResult>.value(PosPrintResult.success);
   }
@@ -153,14 +153,12 @@ class PrinterBluetoothManager {
     _queueSleepTimeMs = queueSleepTimeMs;
     _chunkSizeBytes = chunkSizeBytes;
     _timeOut = timeout;
-    print('$_isConnected CONNECTION STATUS');
+
     if (!_isConnected) {
-      print('CONNECTING BLE');
       final result = await _connectBluetooth(
         ticket.bytes,
         timeout: timeout,
       );
-      print('${result.msg} MESSAGE');
       if (result.msg != 'Success') {
         return result;
       }
