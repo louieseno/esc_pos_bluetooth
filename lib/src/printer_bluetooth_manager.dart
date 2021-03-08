@@ -80,16 +80,17 @@ class PrinterBluetoothManager {
     _bluetoothManager.state.listen((state) async {
       switch (state) {
         case BluetoothManager.CONNECTED:
-          print('CONNECTED STATE');
           _isConnected = true;
-          if (_bufferedBytes.isNotEmpty) {
-            print('WRITE PENDING');
-            await _writePending();
-          }
+          // if (_bufferedBytes.isNotEmpty) {
+          //   await _writePending();
+          // }
+          print('CONNECTED STATE');
+          print('CONNECTED STATE');
           break;
         case BluetoothManager.DISCONNECTED:
-          print('DISCONNECTED STATE');
           _isConnected = false;
+          print('DISCONNECTED STATE');
+          print('DISCONNECTED STATE');
           break;
         default:
           break;
@@ -98,12 +99,11 @@ class PrinterBluetoothManager {
     });
   }
 
-  Future<PosPrintResult> writeBytes(
+  Future<PosPrintResult> _connectBluetooth(
     List<int> bytes, {
     int timeout = 5,
   }) async {
     final Completer<PosPrintResult> completer = Completer();
-    await Future<dynamic>.delayed(Duration(milliseconds: 500));
     if (_selectedPrinter == null) {
       return Future<PosPrintResult>.value(PosPrintResult.printerNotSelected);
     } else if (_isScanning.value) {
@@ -111,24 +111,31 @@ class PrinterBluetoothManager {
     } else if (_isPrinting) {
       return Future<PosPrintResult>.value(PosPrintResult.printInProgress);
     }
-
     // We have to rescan before connecting, otherwise we can connect only once
-    await _bluetoothManager.startScan(timeout: Duration(seconds: _timeOut));
+    await _bluetoothManager.startScan(timeout: Duration(seconds: 1));
     await _bluetoothManager.stopScan();
 
     // Connect
-    await _bluetoothManager.connect(_selectedPrinter._device);
+    final connected = await _bluetoothManager.connect(_selectedPrinter._device);
+    print(connected);
+    await Future<dynamic>.delayed(Duration(milliseconds: 2000));
+    return Future<PosPrintResult>.value(PosPrintResult.success);
+  }
 
-    // Printing timeout
-    _runDelayed(timeout).then((dynamic v) async {
-      if (_isPrinting) {
-        _isPrinting = false;
-        completer.complete(PosPrintResult.timeout);
-      }
-      completer.complete(PosPrintResult.success);
-      //await _bluetoothManager.disconnect();
-    });
-
+  Future<PosPrintResult> _writeRequest(timeout) async {
+    final Completer<PosPrintResult> completer = Completer();
+    if (_bufferedBytes.isNotEmpty) {
+      await _writePending();
+      _runDelayed(timeout).then((dynamic v) async {
+        if (_isPrinting) {
+          _isPrinting = false;
+          completer.complete(PosPrintResult.timeout);
+          await _bluetoothManager.disconnect();
+          print('TIMEOUT');
+        }
+        completer.complete(PosPrintResult.success);
+      });
+    }
     return completer.future;
   }
 
@@ -141,15 +148,24 @@ class PrinterBluetoothManager {
     if (ticket == null || ticket.bytes.isEmpty) {
       return Future<PosPrintResult>.value(PosPrintResult.ticketEmpty);
     }
-
+    _bufferedBytes = [];
     _bufferedBytes = ticket.bytes;
     _queueSleepTimeMs = queueSleepTimeMs;
     _chunkSizeBytes = chunkSizeBytes;
     _timeOut = timeout;
-    return writeBytes(
-      ticket.bytes,
-      timeout: timeout,
-    );
+    print('$_isConnected CONNECTION STATUS');
+    if (!_isConnected) {
+      print('CONNECTING BLE');
+      final result = await _connectBluetooth(
+        ticket.bytes,
+        timeout: timeout,
+      );
+      print('${result.msg} MESSAGE');
+      if (result.msg != 'Success') {
+        return result;
+      }
+    }
+    return await _writeRequest(timeout);
   }
 
   Future<PosPrintResult> printLabel(
@@ -161,14 +177,28 @@ class PrinterBluetoothManager {
     if (bytes == null || bytes.isEmpty) {
       return Future<PosPrintResult>.value(PosPrintResult.ticketEmpty);
     }
+    _bufferedBytes = [];
     _bufferedBytes = bytes;
     _queueSleepTimeMs = queueSleepTimeMs;
     _chunkSizeBytes = chunkSizeBytes;
     _timeOut = timeout;
-    return writeBytes(
-      bytes,
-      timeout: timeout,
-    );
+    if (!_isConnected) {
+      final result = await _connectBluetooth(
+        bytes,
+        timeout: timeout,
+      );
+      if (result.msg != 'Success') {
+        return result;
+      }
+    }
+    return await _writeRequest(timeout);
+  }
+
+  disconnect(timeout) {
+    _runDelayed(timeout).then((dynamic v) async {
+      await _bluetoothManager.disconnect();
+      print('PENDING DISCONNECTED');
+    });
   }
 
   Future<void> _writePending() async {
@@ -185,8 +215,5 @@ class PrinterBluetoothManager {
     }
     _isPrinting = false;
     _bufferedBytes = [];
-    _runDelayed(_timeOut).then((dynamic v) async {
-      await _bluetoothManager.disconnect();
-    });
   }
 }
