@@ -117,8 +117,8 @@ class PrinterBluetoothManager {
 
     // Connect
     final connected = await _bluetoothManager.connect(_selectedPrinter._device);
-    print(connected);
-    await Future<dynamic>.delayed(Duration(milliseconds: 2000));
+    print("$connected CONNECTION DONE");
+    await Future<dynamic>.delayed(Duration(milliseconds: 1500));
     return Future<PosPrintResult>.value(PosPrintResult.success);
   }
 
