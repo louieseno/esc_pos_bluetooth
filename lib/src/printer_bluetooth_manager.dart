@@ -77,26 +77,6 @@ class PrinterBluetoothManager {
 
   void selectPrinter(PrinterBluetooth printer) {
     _selectedPrinter = printer;
-    _bluetoothManager.state.listen((state) async {
-      switch (state) {
-        case BluetoothManager.CONNECTED:
-          _isConnected = true;
-          // if (_bufferedBytes.isNotEmpty) {
-          //   await _writePending();
-          // }
-          print('CONNECTED STATE');
-          print('CONNECTED STATE');
-          break;
-        case BluetoothManager.DISCONNECTED:
-          _isConnected = false;
-          print('DISCONNECTED STATE');
-          print('DISCONNECTED STATE');
-          break;
-        default:
-          break;
-      }
-      print('BluetoothManager.STATE => $state');
-    });
   }
 
   Future<PosPrintResult> _connectBluetooth(
@@ -117,9 +97,27 @@ class PrinterBluetoothManager {
 
     // Connect
     await _bluetoothManager.connect(_selectedPrinter._device);
-    // delay connection ios
-    await Future<dynamic>.delayed(Duration(milliseconds: 1500));
-    return Future<PosPrintResult>.value(PosPrintResult.success);
+
+    _bluetoothManager.state.listen((state) async {
+      switch (state) {
+        case BluetoothManager.CONNECTED:
+          _isConnected = true;
+          print('CONNECTED STATE');
+          print('CONNECTED STATE');
+          completer.complete(PosPrintResult.success);
+          break;
+        case BluetoothManager.DISCONNECTED:
+          _isConnected = false;
+          print('DISCONNECTED STATE');
+          print('DISCONNECTED STATE');
+          break;
+        default:
+          break;
+      }
+      print('BluetoothManager.STATE => $state');
+    });
+
+    return completer.future;
   }
 
   Future<PosPrintResult> _writeRequest(timeout) async {
