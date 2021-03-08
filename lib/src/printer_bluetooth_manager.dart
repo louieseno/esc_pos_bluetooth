@@ -100,7 +100,8 @@ class PrinterBluetoothManager {
     List<int> bytes, {
     int timeout = 5,
   }) async {
-    Timer stateTimer;
+    Timer _stateTimer;
+    int _start = 8;
     final Completer<PosPrintResult> completer = Completer();
     if (_selectedPrinter == null) {
       return Future<PosPrintResult>.value(PosPrintResult.printerNotSelected);
@@ -115,19 +116,25 @@ class PrinterBluetoothManager {
 
     // Connect
     await _bluetoothManager.connect(_selectedPrinter._device);
-    if (!_isConnected && (stateTimer == null || !stateTimer.isActive)) {
-      stateTimer =
-          Timer(Duration(seconds: 5), () => print('ios timeout connect'));
-      print('listen sya');
-    } else {
-      print('cancel');
-      stateTimer?.cancel();
-    }
-    print('$_isConnected STATUS CONNECTION');
+
+    const oneSec = Duration(seconds: 1);
+    _stateTimer = Timer.periodic(
+      oneSec,
+      (Timer timer) {
+        if (_start == 0 || _isConnected) {
+          timer.cancel();
+          print('ENDTIME');
+          print(_isConnected);
+        } else {
+          _start--;
+        }
+        print(timer);
+      },
+    );
     if (_isConnected) {
-      return Future<PosPrintResult>.value(PosPrintResult.timeout);
-    } else {
       return Future<PosPrintResult>.value(PosPrintResult.success);
+    } else {
+      return Future<PosPrintResult>.value(PosPrintResult.timeout);
     }
   }
 
