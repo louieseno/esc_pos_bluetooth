@@ -123,8 +123,12 @@ class PrinterBluetoothManager {
       print('cancel');
       stateTimer?.cancel();
     }
-
-    return Future<PosPrintResult>.value(PosPrintResult.success);
+    print('$_isConnected STATUS CONNECTION');
+    if (_isConnected) {
+      return Future<PosPrintResult>.value(PosPrintResult.timeout);
+    } else {
+      return Future<PosPrintResult>.value(PosPrintResult.success);
+    }
   }
 
   Future<PosPrintResult> _writeRequest(timeout) async {
