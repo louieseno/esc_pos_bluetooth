@@ -77,12 +77,30 @@ class PrinterBluetoothManager {
 
   void selectPrinter(PrinterBluetooth printer) {
     _selectedPrinter = printer;
+    _bluetoothManager.state.listen((state) async {
+      switch (state) {
+        case BluetoothManager.CONNECTED:
+          _isConnected = true;
+          print('CONNECTED STATE');
+          print('CONNECTED STATE');
+          break;
+        case BluetoothManager.DISCONNECTED:
+          _isConnected = false;
+          print('DISCONNECTED STATE');
+          print('DISCONNECTED STATE');
+          break;
+        default:
+          break;
+      }
+      print('BluetoothManager.STATE => $state');
+    });
   }
 
   Future<PosPrintResult> _connectBluetooth(
     List<int> bytes, {
     int timeout = 5,
   }) async {
+    Timer stateTimer;
     final Completer<PosPrintResult> completer = Completer();
     if (_selectedPrinter == null) {
       return Future<PosPrintResult>.value(PosPrintResult.printerNotSelected);
@@ -97,27 +115,16 @@ class PrinterBluetoothManager {
 
     // Connect
     await _bluetoothManager.connect(_selectedPrinter._device);
+    if (!_isConnected && (stateTimer == null || !stateTimer.isActive)) {
+      stateTimer =
+          Timer(Duration(seconds: 5), () => print('ios timeout connect'));
+      print('listen sya');
+    } else {
+      print('cancel');
+      stateTimer?.cancel();
+    }
 
-    _bluetoothManager.state.listen((state) async {
-      switch (state) {
-        case BluetoothManager.CONNECTED:
-          _isConnected = true;
-          print('CONNECTED STATE');
-          print('CONNECTED STATE');
-          completer.complete(PosPrintResult.success);
-          break;
-        case BluetoothManager.DISCONNECTED:
-          _isConnected = false;
-          print('DISCONNECTED STATE');
-          print('DISCONNECTED STATE');
-          break;
-        default:
-          break;
-      }
-      print('BluetoothManager.STATE => $state');
-    });
-
-    return completer.future;
+    return Future<PosPrintResult>.value(PosPrintResult.success);
   }
 
   Future<PosPrintResult> _writeRequest(timeout) async {
@@ -161,6 +168,7 @@ class PrinterBluetoothManager {
         return result;
       }
     }
+
     return await _writeRequest(timeout);
   }
 
