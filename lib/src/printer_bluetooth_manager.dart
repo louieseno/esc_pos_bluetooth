@@ -98,7 +98,7 @@ class PrinterBluetoothManager {
 
   Future<PosPrintResult> _checkConnectionState() async {
     Timer _stateTimer;
-    int _start = 8;
+    int _start = 10;
     final Completer<PosPrintResult> completer = Completer();
     const oneSec = Duration(seconds: 1);
     _stateTimer = Timer.periodic(
@@ -141,7 +141,6 @@ class PrinterBluetoothManager {
     // Connect
     await _bluetoothManager.connect(_selectedPrinter._device);
     final result = await _checkConnectionState();
-    print('$result RESULT HERE CONNECTION ');
     return result;
   }
 
