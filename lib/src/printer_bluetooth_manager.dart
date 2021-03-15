@@ -223,11 +223,14 @@ class PrinterBluetoothManager {
     }
   }
 
-  disconnect(timeout) {
-    _runDelayed(timeout).then((dynamic v) async {
-      await _bluetoothManager.disconnect();
-      print('PENDING DISCONNECTED');
-    });
+  Future<dynamic> disconnect(timeout) async {
+    await Future.delayed(Duration(seconds: timeout));
+    print('PENDING DISCONNECTED');
+    return await _bluetoothManager.disconnect();
+    // _runDelayed(timeout).then((dynamic v) async {
+    //   await _bluetoothManager.disconnect();
+    //   print('PENDING DISCONNECTED');
+    // });
   }
 
   Future<void> _writePending() async {
