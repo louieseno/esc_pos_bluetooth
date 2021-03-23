@@ -148,15 +148,16 @@ class PrinterBluetoothManager {
     final Completer<PosPrintResult> completer = Completer();
     if (_bufferedBytes.isNotEmpty) {
       await _writePending();
-      _runDelayed(timeout).then((dynamic v) async {
-        if (_isPrinting) {
-          _isPrinting = false;
-          completer.complete(PosPrintResult.timeout);
-          await _bluetoothManager.disconnect();
-          print('TIMEOUT');
-        }
-        completer.complete(PosPrintResult.success);
-      });
+      completer.complete(PosPrintResult.success);
+      // _runDelayed(timeout).then((dynamic v) async {
+      //   if (_isPrinting) {
+      //     _isPrinting = false;
+      //     completer.complete(PosPrintResult.timeout);
+      //     await _bluetoothManager.disconnect();
+      //     print('TIMEOUT');
+      //   }
+      //   completer.complete(PosPrintResult.success);
+      // });
     }
     return completer.future;
   }
@@ -227,10 +228,6 @@ class PrinterBluetoothManager {
     await Future.delayed(Duration(seconds: timeout));
     print('PENDING DISCONNECTED');
     return await _bluetoothManager.disconnect();
-    // _runDelayed(timeout).then((dynamic v) async {
-    //   await _bluetoothManager.disconnect();
-    //   print('PENDING DISCONNECTED');
-    // });
   }
 
   Future<void> _writePending() async {
