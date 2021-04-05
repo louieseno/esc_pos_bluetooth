@@ -224,8 +224,9 @@ class PrinterBluetoothManager {
   }
 
   Future<dynamic> disconnect(timeout) async {
-    await Future.delayed(Duration(seconds: timeout));
+    final Completer<PosPrintResult> completer = Completer();
     print('PENDING DISCONNECTED');
+    await Future.delayed(Duration(seconds: timeout));
     await _bluetoothManager.disconnect();
     Timer _stateTimer;
     int _start = 10;
@@ -235,23 +236,20 @@ class PrinterBluetoothManager {
       (Timer timer) {
         if (_start == 0 || !_isConnected) {
           timer.cancel();
-          print('DICONNECT SUCCESS');
           if (!_isConnected) {
             _stateTimer?.cancel();
-            return {'value': 'success', 'message': 'Disconnected'};
+            print('SUCCESS DISCONNECT');
+            completer.complete(PosPrintResult.success);
           } else {
             _stateTimer?.cancel();
-            return {
-              'value': 'error',
-              'message':
-                  'Taking too long to disconnect.. Try to restart printer.'
-            };
+            completer.complete(PosPrintResult.timeout);
           }
         } else {
           _start--;
         }
       },
     );
+    return completer.future;
   }
 
   Future<void> _writePending() async {
