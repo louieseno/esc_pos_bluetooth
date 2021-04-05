@@ -243,7 +243,8 @@ class PrinterBluetoothManager {
             _stateTimer?.cancel();
             return {
               'value': 'error',
-              'message': 'Taking too long to disconnect'
+              'message':
+                  'Taking too long to disconnect.. Try to restart printer.'
             };
           }
         } else {
