@@ -85,7 +85,7 @@ class PrinterBluetoothManager {
           print('CONNECTED STATE');
           break;
         case BluetoothManager.DISCONNECTED:
-          _isConnected = false;
+          // _isConnected = false;
           print('DISCONNECTED STATE');
           print('DISCONNECTED STATE');
           break;
@@ -149,15 +149,16 @@ class PrinterBluetoothManager {
     if (_bufferedBytes.isNotEmpty) {
       await _writePending();
       completer.complete(PosPrintResult.success);
-      // _runDelayed(timeout).then((dynamic v) async {
-      //   if (_isPrinting) {
-      //     _isPrinting = false;
-      //     completer.complete(PosPrintResult.timeout);
-      //     await _bluetoothManager.disconnect();
-      //     print('TIMEOUT');
-      //   }
-      //   completer.complete(PosPrintResult.success);
-      // });
+      _runDelayed(timeout).then((dynamic v) async {
+        if (_isPrinting) {
+          _isPrinting = false;
+          _isConnected = false;
+          completer.complete(PosPrintResult.timeout);
+          await _bluetoothManager.disconnect();
+          print('TIMEOUT');
+        }
+        completer.complete(PosPrintResult.success);
+      });
     }
     return completer.future;
   }
@@ -243,6 +244,7 @@ class PrinterBluetoothManager {
       sleep(Duration(milliseconds: _queueSleepTimeMs));
     }
     _isPrinting = false;
+    _isConnected = false;
     _bufferedBytes = [];
   }
 }
