@@ -147,7 +147,10 @@ class PrinterBluetoothManager {
   Future<PosPrintResult> _writeRequest(timeout) async {
     final Completer<PosPrintResult> completer = Completer();
     if (_bufferedBytes.isNotEmpty) {
-      await _writePending();
+      final result = await _writePending();
+      print(result);
+      print('DONE WRITING');
+      print('DONE WRITING');
       _runDelayed(timeout).then((dynamic v) async {
         if (_isPrinting) {
           _isPrinting = false;
@@ -155,6 +158,7 @@ class PrinterBluetoothManager {
           await _bluetoothManager.disconnect();
           print('TIMEOUT');
         }
+        print('COMPLETE');
         completer.complete(PosPrintResult.success);
       });
     }
@@ -252,19 +256,25 @@ class PrinterBluetoothManager {
     return completer.future;
   }
 
-  Future<void> _writePending() async {
-    final len = _bufferedBytes.length;
-    List<List<int>> chunks = [];
-    for (var i = 0; i < len; i += _chunkSizeBytes) {
-      var end = (i + _chunkSizeBytes < len) ? i + _chunkSizeBytes : len;
-      chunks.add(_bufferedBytes.sublist(i, end));
+  Future<String> _writePending() async {
+    try {
+      final len = _bufferedBytes.length;
+      List<List<int>> chunks = [];
+      for (var i = 0; i < len; i += _chunkSizeBytes) {
+        var end = (i + _chunkSizeBytes < len) ? i + _chunkSizeBytes : len;
+        chunks.add(_bufferedBytes.sublist(i, end));
+      }
+      _isPrinting = true;
+      for (var i = 0; i < chunks.length; i += 1) {
+        await _bluetoothManager.writeData(chunks[i]);
+        sleep(Duration(milliseconds: _queueSleepTimeMs));
+      }
+      _isPrinting = false;
+      _bufferedBytes = [];
+      return 'Success';
+    } catch (err) {
+      print(err);
+      return null;
     }
-    _isPrinting = true;
-    for (var i = 0; i < chunks.length; i += 1) {
-      await _bluetoothManager.writeData(chunks[i]);
-      sleep(Duration(milliseconds: _queueSleepTimeMs));
-    }
-    _isPrinting = false;
-    _bufferedBytes = [];
   }
 }
